@@ -21,7 +21,7 @@ fn part_1(input: &mut [(Hand<CamelCard>, usize)]) -> usize {
 }
 
 fn main() -> Result<()> {
-    let input = std::fs::read_to_string("../inputs/02.txt")?;
+    let input = std::fs::read_to_string("../inputs/07.txt")?;
     let mut input = parse_input(&input)?;
 
     println!("Day 01 - Part 1: {}", part_1(&mut input));
@@ -41,7 +41,7 @@ mod tests {
 
     #[test]
     fn test_parse_input() -> Result<()> {
-        let input = include_str!("../../inputs/tests/02.txt");
+        let input = include_str!("../../inputs/tests/07.txt");
 
         assert_eq!(
             parse_input(input)?,
