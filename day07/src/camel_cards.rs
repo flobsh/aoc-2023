@@ -1,7 +1,9 @@
 use aoc_lib::Error;
 use aoc_lib::Result;
 
-/// Set of existing Camel Cards.
+use crate::PokerCard;
+
+/// Set of Camel Cards, as defined in Advent of Code 2023, Day 07.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CamelCard {
     Two = 2,
@@ -18,6 +20,8 @@ pub enum CamelCard {
     King,
     Ace,
 }
+
+impl PokerCard for CamelCard {}
 
 impl TryFrom<char> for CamelCard {
     type Error = Error;
@@ -45,63 +49,68 @@ impl TryFrom<char> for CamelCard {
     }
 }
 
+/// Parses a hand of CamelCards
+pub fn parse_hand(input: &str) -> Result<Vec<CamelCard>> {
+    input.chars().map(|c| CamelCard::try_from(c)).collect()
+}
+
 #[cfg(test)]
 mod tests {
     use aoc_lib::Result;
 
-    use crate::{camel_cards::CamelCard, poker::Hand};
+    use crate::camel_cards::{parse_hand, CamelCard};
 
     #[test]
     fn parse_hands() -> Result<()> {
         assert_eq!(
-            "32T3K".parse::<Hand<CamelCard>>()?,
-            Hand::new(vec![
+            parse_hand("32T3K")?,
+            vec![
                 CamelCard::Three,
                 CamelCard::Two,
                 CamelCard::Ten,
                 CamelCard::Three,
                 CamelCard::King
-            ])
+            ]
         );
         assert_eq!(
-            "T55J5".parse::<Hand<CamelCard>>()?,
-            Hand::new(vec![
+            parse_hand("T55J5")?,
+            vec![
                 CamelCard::Ten,
                 CamelCard::Five,
                 CamelCard::Five,
                 CamelCard::Jack,
                 CamelCard::Five
-            ])
+            ]
         );
         assert_eq!(
-            "KK677".parse::<Hand<CamelCard>>()?,
-            Hand::new(vec![
+            parse_hand("KK677")?,
+            vec![
                 CamelCard::King,
                 CamelCard::King,
                 CamelCard::Six,
                 CamelCard::Seven,
                 CamelCard::Seven
-            ])
+            ]
         );
         assert_eq!(
-            "KTJJT".parse::<Hand<CamelCard>>()?,
-            Hand::new(vec![
+            parse_hand("KTJJT")?,
+            vec![
                 CamelCard::King,
                 CamelCard::Ten,
                 CamelCard::Jack,
                 CamelCard::Jack,
                 CamelCard::Ten
-            ])
+            ]
         );
         assert_eq!(
-            "QQQJA".parse::<Hand<CamelCard>>()?,
-            Hand::new(vec![
+            parse_hand("QQQJA")?,
+            vec![
                 CamelCard::Queen,
                 CamelCard::Queen,
                 CamelCard::Queen,
                 CamelCard::Jack,
                 CamelCard::Ace
-            ])
+            ]
         );
 
         Ok(())
