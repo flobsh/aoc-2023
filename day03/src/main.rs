@@ -1,4 +1,28 @@
+//! Advent of Code 2023 Day 3
+//!
+//! [](https://adventofcode.com/2023/day/3)
+//!
+//! All symbols are stored in `Vec<(usize, usize)>` that
+//! contains the position of each symbol: (line_number, column_number).
+//!
+//! Numbers are stored in a `Vec<Vec<Number>>`, line by line, e.g.
+//! `numbers[2][1]` is the second number on the third line, so 633 in
+//! the given example.
+//!
+//! # Part 1 algorithm:
+//!
+//! For each symbol, we check if numbers are adjacent to it
+//! on the same line, the line above and the line below it.
+//! Then all adjacent numbers are summed up, and the operation
+//! is repeated for all symbols.
 use aoc_lib::Result;
+
+/// Symbol struct
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Symbol {
+    position: (usize, usize),
+    sym: char,
+}
 
 /// Struct that holds the position of a number
 /// on a line, as well as its length and its value as `usize`.
@@ -32,8 +56,8 @@ enum ParseState {
 }
 
 /// Parse the challenge's input, returning found numbers in a two-dimension array of [`Number`],
-/// and symbols' positions in an array of positions (line, column).
-fn parse_input(input: &str) -> Result<(Vec<Vec<Number>>, Vec<(usize, usize)>)> {
+/// and symbols in a `Vec<Symbol>`.
+fn parse_input(input: &str) -> Result<(Vec<Vec<Number>>, Vec<Symbol>)> {
     input.lines().enumerate().try_fold(
         (Vec::new(), Vec::new()),
         |(mut numbers, mut symbols), (line_number, line)| {
@@ -50,7 +74,10 @@ fn parse_input(input: &str) -> Result<(Vec<Vec<Number>>, Vec<(usize, usize)>)> {
                     // If we are looking for a symbol and found one, we add its position into
                     // the array.
                     (c, ParseState::LookingForDigitOrSymbol) if c != '.' => {
-                        symbols.push((line_number, position))
+                        symbols.push(Symbol {
+                            position: (line_number, position),
+                            sym: c,
+                        });
                     }
                     // If we are looking for a number's end and found it, we add the number into the array.
                     // If the character is also a symbol, we add its position into the array.
@@ -58,7 +85,10 @@ fn parse_input(input: &str) -> Result<(Vec<Vec<Number>>, Vec<(usize, usize)>)> {
                         numbers_in_line
                             .push(Number::try_from_input(*start, &line[*start..position])?);
                         if c != '.' {
-                            symbols.push((line_number, position));
+                            symbols.push(Symbol {
+                                position: (line_number, position),
+                                sym: c,
+                            });
                         }
                         state = ParseState::LookingForDigitOrSymbol;
                     }
@@ -87,18 +117,18 @@ fn sum_numbers_adjacent_to(numbers: &[Number], symbol_position: usize) -> usize 
 }
 
 /// Compute the sum of numbers adjacent to the provided symbol.
-fn sum_numbers_around_symbol(numbers: &[Vec<Number>], symbol: &(usize, usize)) -> usize {
-    let (symbol_line, symbol_col) = symbol;
+fn sum_numbers_around_symbol(numbers: &[Vec<Number>], symbol: &Symbol) -> usize {
+    let (symbol_line, symbol_col) = symbol.position;
     // Compute range going from symbol_line - 1 to symbol_line + 1 (inclusive).
     let range = symbol_line.saturating_sub(1)..=symbol_line + 1;
 
     range
         .flat_map(|line_number| numbers.get(line_number))
-        .map(|number_line| sum_numbers_adjacent_to(number_line, *symbol_col))
+        .map(|number_line| sum_numbers_adjacent_to(number_line, symbol_col))
         .sum()
 }
 
-fn part_1(numbers: &[Vec<Number>], symbols: &[(usize, usize)]) -> usize {
+fn part_1(numbers: &[Vec<Number>], symbols: &[Symbol]) -> usize {
     symbols
         .iter()
         .map(|symbol| sum_numbers_around_symbol(numbers, symbol))
@@ -122,7 +152,7 @@ mod tests {
 
     const SAMPLE: &str = include_str!("../../inputs/tests/03.txt");
 
-    fn parsed_sample() -> Result<(Vec<Vec<Number>>, Vec<(usize, usize)>)> {
+    fn parsed_sample() -> Result<(Vec<Vec<Number>>, Vec<Symbol>)> {
         let numbers = vec![
             vec![
                 Number::try_from_input(0, "467")?,
@@ -144,7 +174,32 @@ mod tests {
                 Number::try_from_input(5, "598")?,
             ],
         ];
-        let symbols = vec![(1, 3), (3, 6), (4, 3), (5, 5), (8, 3), (8, 5)];
+        let symbols = vec![
+            Symbol {
+                position: (1, 3),
+                sym: '*',
+            },
+            Symbol {
+                position: (3, 6),
+                sym: '#',
+            },
+            Symbol {
+                position: (4, 3),
+                sym: '*',
+            },
+            Symbol {
+                position: (5, 5),
+                sym: '+',
+            },
+            Symbol {
+                position: (8, 3),
+                sym: '$',
+            },
+            Symbol {
+                position: (8, 5),
+                sym: '*',
+            },
+        ];
 
         Ok((numbers, symbols))
     }
