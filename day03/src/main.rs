@@ -15,6 +15,11 @@
 //! on the same line, the line above and the line below it.
 //! Then all adjacent numbers are summed up, and the operation
 //! is repeated for all symbols.
+//!
+//! # Part 2 algorithm:
+//!
+//! For each `*` symbol, we check if it has exactly two numbers
+//! adjacent to it. Then these numbers are multiplied.
 use aoc_lib::Result;
 
 /// Symbol struct
@@ -123,6 +128,7 @@ fn sum_numbers_around_symbol(numbers: &[Vec<Number>], symbol: &Symbol) -> usize 
     let range = symbol_line.saturating_sub(1)..=symbol_line + 1;
 
     range
+        // Safely index into `numbers` to get a line.
         .flat_map(|line_number| numbers.get(line_number))
         .map(|number_line| sum_numbers_adjacent_to(number_line, symbol_col))
         .sum()
@@ -135,11 +141,47 @@ fn part_1(numbers: &[Vec<Number>], symbols: &[Symbol]) -> usize {
         .sum()
 }
 
+fn compute_gear_ratio(numbers: &[Vec<Number>], symbol: &Symbol) -> Option<usize> {
+    let (symbol_line, symbol_col) = symbol.position;
+    // Compute range going from symbol_line - 1 to symbol_line + 1 (inclusive).
+    let range = symbol_line.saturating_sub(1)..=symbol_line + 1;
+
+    let candidate_numbers: Vec<&Number> = range
+        // Safely index into `numbers` to get a line.
+        .flat_map(|line_number| numbers.get(line_number))
+        // Then iterate over all the numbers of the line
+        .flat_map(|number_line| number_line.iter())
+        // And keep only those adjacent to the symbol
+        .filter(|number| number.is_adjacent_to(symbol_col))
+        .collect();
+
+    match candidate_numbers.len() {
+        2 => Some(
+            candidate_numbers
+                .iter()
+                .map(|number| number.value)
+                .product(),
+        ),
+        _ => None,
+    }
+}
+
+fn part_2(numbers: &[Vec<Number>], symbols: &[Symbol]) -> usize {
+    symbols
+        .iter()
+        // Keep only '*' symbols
+        .filter(|symbol| symbol.sym == '*')
+        // And filter those with exactly 2 adjacent numbers, computing their product
+        .filter_map(|symbol| compute_gear_ratio(numbers, symbol))
+        .sum()
+}
+
 fn main() -> Result<()> {
     let input = std::fs::read_to_string("../inputs/03.txt")?;
     let (numbers, symbols) = parse_input(&input)?;
 
     println!("Day 01 - Part 1: {}", part_1(&numbers, &symbols));
+    println!("Day 01 - Part 2: {}", part_2(&numbers, &symbols));
 
     Ok(())
 }
@@ -215,6 +257,14 @@ mod tests {
     fn test_part_1() -> Result<()> {
         let (numbers, symbols) = parsed_sample()?;
         assert_eq!(part_1(&numbers, &symbols), 4361);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_part_2() -> Result<()> {
+        let (numbers, symbols) = parsed_sample()?;
+        assert_eq!(part_2(&numbers, &symbols), 467835);
 
         Ok(())
     }
