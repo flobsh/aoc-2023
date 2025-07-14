@@ -2,8 +2,8 @@
 //!
 //! [](https://adventofcode.com/2023/day/3)
 //!
-//! All symbols are stored in `Vec<(usize, usize)>` that
-//! contains the position of each symbol: (line_number, column_number).
+//! All symbols are stored in `Vec<Symbol>` that
+//! contains the character and position of each symbol: (line_number, column_number).
 //!
 //! Numbers are stored in a `Vec<Vec<Number>>`, line by line, e.g.
 //! `numbers[2][1]` is the second number on the third line, so 633 in
@@ -180,8 +180,8 @@ fn main() -> Result<()> {
     let input = std::fs::read_to_string("../inputs/03.txt")?;
     let (numbers, symbols) = parse_input(&input)?;
 
-    println!("Day 01 - Part 1: {}", part_1(&numbers, &symbols));
-    println!("Day 01 - Part 2: {}", part_2(&numbers, &symbols));
+    println!("Day 03 - Part 1: {}", part_1(&numbers, &symbols));
+    println!("Day 03 - Part 2: {}", part_2(&numbers, &symbols));
 
     Ok(())
 }
